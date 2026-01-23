@@ -1,0 +1,21 @@
+# base/frontend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      serviceAccountName: frontend
+      containers:
+        - name: frontend
+          image: tienphatng237/mini-ecommerce-frontend
+          ports:
+            - containerPort: 80

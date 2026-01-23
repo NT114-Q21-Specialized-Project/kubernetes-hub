@@ -1,0 +1,6 @@
+# base/frontend/kustomization.yaml
+resources:
+  - serviceaccount.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
