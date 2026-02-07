@@ -45,7 +45,7 @@ images:
     newTag: dev
 
   - name: tienphatng237/mini-ecommerce-frontend
-    newTag: dev
+    newTag: 679659a
 
   - name: tienphatng237/mini-ecommerce-user-service
     newTag: dev

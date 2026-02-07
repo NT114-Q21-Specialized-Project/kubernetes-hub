@@ -16,7 +16,7 @@ spec:
       serviceAccountName: frontend
       containers:
         - name: frontend
-          image: tienphatng237/mini-ecommerce-frontend
+          image: tienphatng237/mini-ecommerce-frontend:679659a
           imagePullPolicy: Always
           ports:
             - containerPort: 80
