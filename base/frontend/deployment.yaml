@@ -17,5 +17,6 @@ spec:
       containers:
         - name: frontend
           image: tienphatng237/mini-ecommerce-frontend
+          imagePullPolicy: Always
           ports:
             - containerPort: 80

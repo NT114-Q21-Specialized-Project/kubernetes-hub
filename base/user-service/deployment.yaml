@@ -16,6 +16,7 @@ spec:
       containers:
         - name: user-service
           image: tienphatng237/mini-ecommerce-user-service
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
 
