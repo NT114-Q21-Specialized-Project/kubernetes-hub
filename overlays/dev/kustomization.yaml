@@ -27,6 +27,8 @@ patches:
   - path: resources.yaml
   # topologySpreadConstraints
   - path: tsc.yaml
+  # CORS for local frontend ports (3000, 5173, ...)
+  - path: cors.yaml
 # =========================
 # IMAGES (DEV TAG)
 # =========================

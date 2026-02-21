@@ -6,5 +6,5 @@ spec:
   selector:
     app: product-service
   ports:
-    - port: 80
+    - port: 8080
       targetPort: 8080

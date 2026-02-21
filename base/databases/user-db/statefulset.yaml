@@ -22,8 +22,14 @@ spec:
             - secretRef:
                 name: user-db-secret
           volumeMounts:
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d
             - name: data
               mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: init-sql
+          configMap:
+            name: user-db-init
   volumeClaimTemplates:
     - metadata:
         name: data

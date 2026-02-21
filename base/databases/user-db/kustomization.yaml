@@ -4,13 +4,9 @@ kind: Kustomization
 resources:
   - service.yaml
   - statefulset.yaml
+  - secret.yaml
 
-secretGenerator:
-  - name: user-db-secret
-    literals:
-      - POSTGRES_DB=userdb
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=devpassword
-
-generatorOptions:
-  disableNameSuffixHash: true
+configMapGenerator:
+  - name: user-db-init
+    files:
+      - init-users.sql

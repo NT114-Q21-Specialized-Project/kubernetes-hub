@@ -1,2 +1,5 @@
 # ===== Secrets =====
 **/secret.yaml
+
+# ===== Argo CD install (official manifest - too large) =====
+**/install.yaml

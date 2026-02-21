@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  template:
+    spec:
+      containers:
+        - name: api-gateway
+          env:
+            - name: GATEWAY_ALLOWED_ORIGIN_PATTERN
+              value: http://localhost:3000

@@ -21,15 +21,8 @@ spec:
             - containerPort: 8080
 
           env:
-            - name: DB_HOST
-              value: product-db
-            - name: DB_PORT
-              value: "5432"
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: product-db-secret
-                  key: POSTGRES_DB
+            - name: DB_URL
+              value: jdbc:postgresql://product-db:5432/productdb
             - name: DB_USER
               valueFrom:
                 secretKeyRef:

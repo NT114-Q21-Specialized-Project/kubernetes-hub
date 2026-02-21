@@ -21,15 +21,8 @@ spec:
             - containerPort: 8080
 
           env:
-            - name: DB_HOST
-              value: order-db
-            - name: DB_PORT
-              value: "5432"
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: order-db-secret
-                  key: POSTGRES_DB
+            - name: DB_URL
+              value: jdbc:postgresql://order-db:5432/orderdb
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -40,3 +33,9 @@ spec:
                 secretKeyRef:
                   name: order-db-secret
                   key: POSTGRES_PASSWORD
+            - name: PRODUCT_SERVICE_BASE_URL
+              value: http://product-service:8080
+            - name: HTTP_CONNECT_TIMEOUT_MS
+              value: "2000"
+            - name: HTTP_READ_TIMEOUT_MS
+              value: "5000"

@@ -4,13 +4,4 @@ kind: Kustomization
 resources:
   - service.yaml
   - statefulset.yaml
-
-secretGenerator:
-  - name: product-db-secret
-    literals:
-      - POSTGRES_DB=productdb
-      - POSTGRES_USER=product
-      - POSTGRES_PASSWORD=devpassword
-
-generatorOptions:
-  disableNameSuffixHash: true
+  - secret.yaml

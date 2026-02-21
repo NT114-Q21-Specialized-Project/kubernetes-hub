@@ -4,13 +4,4 @@ kind: Kustomization
 resources:
   - service.yaml
   - statefulset.yaml
-
-secretGenerator:
-  - name: order-db-secret
-    literals:
-      - POSTGRES_DB=orderdb
-      - POSTGRES_USER=order
-      - POSTGRES_PASSWORD=devpassword
-
-generatorOptions:
-  disableNameSuffixHash: true
+  - secret.yaml
