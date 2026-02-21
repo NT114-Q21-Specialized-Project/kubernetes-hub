@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - service.yaml
   - statefulset.yaml
-  - secret.yaml
+  - sealedsecret.yaml
 
 configMapGenerator:
   - name: user-db-init
