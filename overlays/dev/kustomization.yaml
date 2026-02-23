@@ -36,7 +36,7 @@ images:
   - name: tienphatng237/mini-ecommerce-api-gateway
     newTag: "07af807"
   - name: tienphatng237/mini-ecommerce-frontend
-    newTag: 07af807
+    newTag: 852eeae
   - name: tienphatng237/mini-ecommerce-user-service
     newTag: a623fb3
   - name: tienphatng237/mini-ecommerce-product-service
