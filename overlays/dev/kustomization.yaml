@@ -34,7 +34,7 @@ patches:
 # =========================
 images:
   - name: tienphatng237/mini-ecommerce-api-gateway
-    newTag: "07af807"
+    newTag: "852eeae"
   - name: tienphatng237/mini-ecommerce-frontend
     newTag: 852eeae
   - name: tienphatng237/mini-ecommerce-user-service
