@@ -38,7 +38,7 @@ images:
   - name: tienphatng237/mini-ecommerce-frontend
     newTag: 15ed424
   - name: tienphatng237/mini-ecommerce-user-service
-    newTag: ad06d26
+    newTag: 15ed424
   - name: tienphatng237/mini-ecommerce-product-service
     newTag: "ad06d26"
   - name: tienphatng237/mini-ecommerce-order-service
