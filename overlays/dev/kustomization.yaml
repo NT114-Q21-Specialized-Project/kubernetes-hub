@@ -40,6 +40,6 @@ images:
   - name: tienphatng237/mini-ecommerce-user-service
     newTag: 852eeae
   - name: tienphatng237/mini-ecommerce-product-service
-    newTag: "852eeae"
+    newTag: "ad06d26"
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "07af807"
