@@ -6,9 +6,9 @@ This repository contains Kubernetes manifests and GitOps configuration for the [
 
 Contains manifests for setting up ArgoCD in the Kubernetes cluster.
 
-### Dev Environment (Minikube)
+### Dev Environment
 
-All manifests in this repository are currently validated on the development environment using Minikube.
+All manifests in this repository are validated on local Minikube and k0s dev clusters.
 
 ### Application Overview
 
@@ -26,22 +26,67 @@ All manifests in this repository are currently validated on the development envi
 
 ![Network](images/network.png)
 
-## 2. Argo CD Deployment (Dev on Minikube)
+## 2. GitOps Bootstrap (Argo CD)
 
 ### 2.1 Prerequisites
 
-- A running Kubernetes cluster (Minikube for local dev)
+- A running Kubernetes cluster (Minikube or k0s)
 - `kubectl`, `helm`, `argocd` CLI (optional but recommended)
 - NGINX Ingress Controller installed in the cluster
 
-### 2.2 Install Argo CD Control Plane
+### 2.2 Bootstrap Infra + Argo CD (Recommended)
+
+Use the bootstrap script to prepare the cluster and enable GitOps.
+This script does NOT deploy the app directly. It only installs infra and creates the Argo CD Application.
+
+```bash
+# From the repo root
+./scripts/bootstrap-infra.sh
+```
+
+What it does:
+- ensure namespace exists
+- ensure default StorageClass (installs local-path-provisioner if missing)
+- install Sealed Secrets controller if missing
+- install Argo CD if missing (server-side apply)
+- apply Argo CD Application manifest
+- print Argo CD status
+
+### 2.3 Reset GitOps on k0s Master (Clean Re-clone)
+
+If you want a clean reset on k0s master, use the reset script.
+It removes `/home/ubuntu/kubernetes-hub`, clones fresh, and re-runs bootstrap.
+
+```bash
+# This script expects the SSH key at ../jenkins-kvm-hub/key_pair/lab-key
+cd /home/tienphatng237/Desktop/NT114-AIOPs-DevOps/kubernetes-hub
+./scripts/reset-gitops.sh
+```
+
+Adjust `HOST` or `KEY` inside `scripts/reset-gitops.sh` if your environment differs.
+
+Manual SSH run (k0s) without the reset script:
+
+```bash
+scp -i key_pair/lab-key ../kubernetes-hub/scripts/bootstrap-infra.sh \
+  ubuntu@192.168.201.10:/home/ubuntu/kubernetes-hub/scripts/bootstrap-infra.sh
+
+ssh -i key_pair/lab-key ubuntu@192.168.201.10 \
+  'chmod +x ~/kubernetes-hub/scripts/bootstrap-infra.sh && cd ~/kubernetes-hub && ./scripts/bootstrap-infra.sh'
+
+sudo k0s kubectl -n argocd get applications
+sudo k0s kubectl -n argocd get pods
+sudo k0s kubectl -n mini-ecommerce get pods
+```
+
+### 2.4 Manual Argo CD Install (Optional)
 
 ```bash
 # 1) Create namespace
 kubectl create namespace argocd
 
-# 2) Install Argo CD from repository manifest
-kubectl apply -n argocd -f argocd/install.yaml
+# 2) Install Argo CD from repository manifest (server-side apply)
+kubectl apply --server-side --force-conflicts -n argocd -f argocd/install.yaml
 
 # 3) Wait core components
 kubectl -n argocd rollout status statefulset/argocd-application-controller --timeout=300s
@@ -53,7 +98,7 @@ kubectl -n argocd rollout status deploy/argocd-applicationset-controller --timeo
 kubectl apply -f argocd/ingress.yaml
 ```
 
-### 2.3 Access Argo CD
+### 2.5 Access Argo CD
 
 ```bash
 # 1) Port-forward Argo CD UI/API
@@ -67,6 +112,42 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 argocd login localhost:8088 --username admin --password '<INITIAL_PASSWORD>' --insecure
 ```
 
+### 2.5.1 Access Argo CD on k0s Master (No kubectl)
+
+On k0s, use `sudo k0s kubectl` instead of `kubectl`.
+
+Port-forward on the k0s master:
+
+```bash
+sudo k0s kubectl -n argocd port-forward svc/argocd-server 8088:443
+```
+
+If you want to access from your local machine, open an SSH tunnel:
+
+```bash
+ssh -i key_pair/lab-key -L 8088:127.0.0.1:8088 ubuntu@192.168.201.10
+```
+
+Then open `https://localhost:8088` in your browser.
+
+### 2.5.2 Access Argo CD via Ingress (Optional)
+
+This requires an NGINX Ingress Controller in the cluster.
+Run from the repo root on k0s master:
+
+```bash
+cd ~/kubernetes-hub
+sudo k0s kubectl apply -f argocd/ingress.yaml
+```
+
+Add a host entry on your local machine:
+
+```bash
+echo "192.168.201.10 argocd.local" | sudo tee -a /etc/hosts
+```
+
+Then open `https://argocd.local`.
+
 If using ingress locally, map hosts to Minikube IP:
 
 ```bash
@@ -74,7 +155,7 @@ IP=$(minikube ip)
 echo "$IP argocd.local mini-ecommerce.local" | sudo tee -a /etc/hosts
 ```
 
-### 2.4 Deploy Mini E-commerce Application with Argo CD
+### 2.6 Deploy Mini E-commerce Application with Argo CD
 
 ```bash
 # 1) Create/update Argo CD Application
@@ -86,7 +167,7 @@ argocd app sync mini-ecommerce-dev
 argocd app wait mini-ecommerce-dev --health --sync --timeout 300
 ```
 
-### 2.5 Verify Deployment
+### 2.7 Verify Deployment
 
 ```bash
 # Argo CD application status
@@ -100,19 +181,29 @@ kubectl get pods,svc,ingress -n mini-ecommerce
 curl --resolve mini-ecommerce.local:80:$(minikube ip) http://mini-ecommerce.local/api/users/health
 ```
 
-## 3. Sealed Secrets (Current Dev Setup)
+## 3. Sealed Secrets (Cluster-Specific)
 
-This repository uses Sealed Secrets for database credentials in GitOps.
+Sealed Secrets are cluster-specific. When you change clusters (e.g., k0s),
+you must reseal the secrets using that cluster's public key.
 
 ```bash
 # 1) Install/upgrade Sealed Secrets controller
 ./scripts/install-sealed-secrets.sh
 
-# 2) Generate sealedsecret.yaml files from local secret.yaml files
+# 2) Create secret.yaml locally (ignored by git) from example, then edit values
+cp base/databases/user-db/secret.yaml.example base/databases/user-db/secret.yaml
+cp base/databases/product-db/secret.yaml.example base/databases/product-db/secret.yaml
+cp base/databases/order-db/secret.yaml.example base/databases/order-db/secret.yaml
+
+# 3) Ensure kubeseal is installed on the target cluster host (example)
+curl -fsSL -o /tmp/kubeseal.tar.gz https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.36.0/kubeseal-0.36.0-linux-amd64.tar.gz
+tar -C /tmp -xzf /tmp/kubeseal.tar.gz
+sudo install -m 755 /tmp/kubeseal /usr/local/bin/kubeseal
+
+# 4) Generate sealedsecret.yaml files using the target cluster key
 ./scripts/generate-sealed-secrets.sh
 
-# 3) Apply dev overlay and run bootstrap + smoke checks
-./scripts/apply-dev.sh
+# 5) Commit sealedsecret.yaml and push so Argo CD can reconcile
 ```
 
 ## 4. Sync Conflict Note (When Jenkins Updates Image Tags)

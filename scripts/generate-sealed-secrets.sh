@@ -6,6 +6,7 @@ NAMESPACE="${NAMESPACE:-mini-ecommerce}"
 CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
 CONTROLLER_NAME="${CONTROLLER_NAME:-sealed-secrets-controller}"
 KUBESEAL_BIN="${KUBESEAL_BIN:-kubeseal}"
+KUBECTL=()
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -14,10 +15,32 @@ require_cmd() {
   }
 }
 
-require_cmd kubectl
+ensure_kubectl() {
+  if command -v kubectl >/dev/null 2>&1; then
+    KUBECTL=(kubectl)
+    return
+  fi
+
+  if command -v k0s >/dev/null 2>&1; then
+    KUBECTL=(sudo k0s kubectl)
+
+    if [[ -z "${KUBECONFIG:-}" ]]; then
+      local kubeconfig="${TMPDIR:-/tmp}/k0s-kubeconfig"
+      sudo k0s kubeconfig admin > "$kubeconfig"
+      sudo chmod 0644 "$kubeconfig"
+      export KUBECONFIG="$kubeconfig"
+    fi
+    return
+  fi
+
+  echo "[ERROR] kubectl not found and k0s is unavailable."
+  exit 1
+}
+
+ensure_kubectl
 require_cmd "$KUBESEAL_BIN"
 
-if ! kubectl get crd sealedsecrets.bitnami.com >/dev/null 2>&1; then
+if ! "${KUBECTL[@]}" get crd sealedsecrets.bitnami.com >/dev/null 2>&1; then
   echo "[ERROR] CRD sealedsecrets.bitnami.com not found. Install Sealed Secrets controller first."
   exit 1
 fi
@@ -32,7 +55,7 @@ generate_one() {
     exit 1
   fi
 
-  kubectl create --dry-run=client -f "$plain_secret" -o yaml -n "$NAMESPACE" \
+  "${KUBECTL[@]}" create --dry-run=client -f "$plain_secret" -o yaml -n "$NAMESPACE" \
     | "$KUBESEAL_BIN" \
       --controller-name "$CONTROLLER_NAME" \
       --controller-namespace "$CONTROLLER_NAMESPACE" \
