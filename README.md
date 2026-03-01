@@ -93,9 +93,6 @@ kubectl -n argocd rollout status statefulset/argocd-application-controller --tim
 kubectl -n argocd rollout status deploy/argocd-server --timeout=300s
 kubectl -n argocd rollout status deploy/argocd-repo-server --timeout=300s
 kubectl -n argocd rollout status deploy/argocd-applicationset-controller --timeout=300s
-
-# 4) (Optional) Expose Argo CD via ingress host argocd.local
-kubectl apply -f argocd/ingress.yaml
 ```
 
 ### 2.5 Access Argo CD
@@ -130,31 +127,6 @@ ssh -i key_pair/lab-key -L 8088:127.0.0.1:8088 ubuntu@192.168.201.10
 
 Then open `https://localhost:8088` in your browser.
 
-### 2.5.2 Access Argo CD via Ingress (Optional)
-
-This requires an NGINX Ingress Controller in the cluster.
-Run from the repo root on k0s master:
-
-```bash
-cd ~/kubernetes-hub
-sudo k0s kubectl apply -f argocd/ingress.yaml
-```
-
-Add a host entry on your local machine:
-
-```bash
-echo "192.168.201.10 argocd.local" | sudo tee -a /etc/hosts
-```
-
-Then open `https://argocd.local`.
-
-If using ingress locally, map hosts to Minikube IP:
-
-```bash
-IP=$(minikube ip)
-echo "$IP argocd.local mini-ecommerce.local" | sudo tee -a /etc/hosts
-```
-
 ### 2.6 Deploy Mini E-commerce Application with Argo CD
 
 ```bash
@@ -178,7 +150,8 @@ kubectl -n argocd get application mini-ecommerce-dev
 kubectl get pods,svc,ingress -n mini-ecommerce
 
 # Quick ingress smoke check
-curl --resolve mini-ecommerce.local:80:$(minikube ip) http://mini-ecommerce.local/api/users/health
+LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl --resolve mini-ecommerce.tienphatng237.com:80:$LB_IP http://mini-ecommerce.tienphatng237.com/api/users/health
 ```
 
 ## 3. Sealed Secrets (Cluster-Specific)
@@ -206,7 +179,54 @@ sudo install -m 755 /tmp/kubeseal /usr/local/bin/kubeseal
 # 5) Commit sealedsecret.yaml and push so Argo CD can reconcile
 ```
 
-## 4. Sync Conflict Note (When Jenkins Updates Image Tags)
+## 4. Ingress Access (Argo CD + Mini E-commerce)
+
+This requires an NGINX Ingress Controller in the cluster.
+
+### 4.1 Apply Ingress Manifests on k0s
+
+Run from the repo root on k0s master:
+
+```bash
+cd ~/kubernetes-hub
+
+# Apply Argo CD ingress
+sudo k0s kubectl apply -f argocd/ingress.yaml
+
+# Apply mini-ecommerce ingress from dev overlay
+sudo k0s kubectl apply -k overlays/dev
+```
+
+### 4.2 Add Hosts on Your Local Machine
+
+```bash
+LB_IP=$(ssh -i key_pair/lab-key ubuntu@192.168.201.10 \
+  "sudo k0s kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'")
+
+sudo sed -i '/argocd\.tienphatng237\.com/d;/mini-ecommerce\.tienphatng237\.com/d' /etc/hosts
+echo "$LB_IP argocd.tienphatng237.com mini-ecommerce.tienphatng237.com" | sudo tee -a /etc/hosts
+```
+
+Open:
+- `https://argocd.tienphatng237.com`
+- `http://mini-ecommerce.tienphatng237.com`
+
+If using ingress locally (Minikube), map hosts to Minikube IP:
+
+```bash
+IP=$(minikube ip)
+sudo sed -i '/argocd\.tienphatng237\.com/d;/mini-ecommerce\.tienphatng237\.com/d' /etc/hosts
+echo "$IP argocd.tienphatng237.com mini-ecommerce.tienphatng237.com" | sudo tee -a /etc/hosts
+```
+
+### 4.3 Quick Ingress Smoke Check
+
+```bash
+LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl --resolve mini-ecommerce.tienphatng237.com:80:$LB_IP http://mini-ecommerce.tienphatng237.com/api/users/health
+```
+
+## 5. Sync Conflict Note (When Jenkins Updates Image Tags)
 
 If Jenkins pushes a new `gitops(dev): update image tags ...` commit before your push:
 
