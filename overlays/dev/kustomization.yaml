@@ -42,7 +42,7 @@ images:
   - name: tienphatng237/mini-ecommerce-frontend
     newTag: 4baf6ea
   - name: tienphatng237/mini-ecommerce-user-service
-    newTag: 4baf6ea
+    newTag: 5d449e1
   - name: tienphatng237/mini-ecommerce-product-service
     newTag: "4baf6ea"
   - name: tienphatng237/mini-ecommerce-order-service
