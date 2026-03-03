@@ -48,6 +48,6 @@ images:
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "ceb56aa"
   - name: tienphatng237/mini-ecommerce-inventory-service
-    newTag: ceb56aa
+    newTag: fea4c10
   - name: tienphatng237/mini-ecommerce-payment-service
     newTag: ceb56aa
