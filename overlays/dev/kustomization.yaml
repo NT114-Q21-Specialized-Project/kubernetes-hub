@@ -40,7 +40,7 @@ images:
   - name: tienphatng237/mini-ecommerce-api-gateway
     newTag: "ceb56aa"
   - name: tienphatng237/mini-ecommerce-frontend
-    newTag: ceb56aa
+    newTag: fea4c10
   - name: tienphatng237/mini-ecommerce-user-service
     newTag: ceb56aa
   - name: tienphatng237/mini-ecommerce-product-service
