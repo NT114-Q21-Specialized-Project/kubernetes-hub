@@ -44,7 +44,7 @@ images:
   - name: tienphatng237/mini-ecommerce-user-service
     newTag: fea4c10
   - name: tienphatng237/mini-ecommerce-product-service
-    newTag: "ceb56aa"
+    newTag: "fea4c10"
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "ceb56aa"
   - name: tienphatng237/mini-ecommerce-inventory-service
