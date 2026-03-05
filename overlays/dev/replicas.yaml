@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: api-gateway
 spec:
-  replicas: 1
+  replicas: 2
 ---
 
 apiVersion: apps/v1
@@ -11,7 +11,7 @@ kind: Deployment
 metadata:
   name: frontend
 spec:
-  replicas: 1
+  replicas: 2
 ---
 
 apiVersion: apps/v1
