@@ -50,4 +50,4 @@ images:
   - name: tienphatng237/mini-ecommerce-inventory-service
     newTag: 80d2da0
   - name: tienphatng237/mini-ecommerce-payment-service
-    newTag: fba605c
+    newTag: 80d2da0
