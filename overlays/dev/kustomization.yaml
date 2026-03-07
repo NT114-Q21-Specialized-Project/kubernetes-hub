@@ -42,7 +42,7 @@ images:
   - name: tienphatng237/mini-ecommerce-frontend
     newTag: "fba605c"
   - name: tienphatng237/mini-ecommerce-user-service
-    newTag: b13c05e
+    newTag: fba605c
   - name: tienphatng237/mini-ecommerce-product-service
     newTag: "b13c05e"
   - name: tienphatng237/mini-ecommerce-order-service
