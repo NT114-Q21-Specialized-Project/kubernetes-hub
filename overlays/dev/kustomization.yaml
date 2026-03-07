@@ -46,7 +46,7 @@ images:
   - name: tienphatng237/mini-ecommerce-product-service
     newTag: "fba605c"
   - name: tienphatng237/mini-ecommerce-order-service
-    newTag: "76077de"
+    newTag: "80d2da0"
   - name: tienphatng237/mini-ecommerce-inventory-service
     newTag: 80d2da0
   - name: tienphatng237/mini-ecommerce-payment-service
