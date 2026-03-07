@@ -48,6 +48,6 @@ images:
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "39eabf8"
   - name: tienphatng237/mini-ecommerce-inventory-service
-    newTag: b13c05e
+    newTag: fba605c
   - name: tienphatng237/mini-ecommerce-payment-service
     newTag: 39eabf8
