@@ -259,6 +259,16 @@ echo "$LB_IP chaos-mesh.tienphatng237" | sudo tee -a /etc/hosts
 Open:
 - `http://chaos-mesh.tienphatng237`
 
+### 5.4 Chaos Experiment Screenshots
+
+Chaos Mesh dashboard during experiment execution:
+
+![Chaos Mesh Dashboard](images/chaos_mesh_dashboard.png)
+
+Chaos events timeline showing fault injections:
+
+![Chaos Mesh Events](images/chaos_mesh_events.png)
+
 ## 6. Sync Conflict Note (When Jenkins Updates Image Tags)
 
 If Jenkins pushes a new `gitops(dev): update image tags ...` commit before your push:
