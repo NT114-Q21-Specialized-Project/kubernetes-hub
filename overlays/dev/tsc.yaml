@@ -6,9 +6,84 @@ spec:
   template:
     spec:
       topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              app: api-gateway
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: api-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  template:
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: user-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+spec:
+  template:
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: product-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  template:
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: order-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+spec:
+  template:
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: inventory-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  template:
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: payment-service
