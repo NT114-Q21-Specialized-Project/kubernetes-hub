@@ -1,6 +1,12 @@
 # Kubernetes Hub
 
-This repository contains Kubernetes manifests and GitOps configuration for the [Mini E-commerce system](https://github.com/NT114-Q21-Specialized-Project/mini-ecommerce-microservices).
+This repository contains Kubernetes manifests, GitOps configuration and Chaos Mesh for the [Mini E-commerce system](https://github.com/NT114-Q21-Specialized-Project/mini-ecommerce-microservices).
+
+## Table of Contents
+
+- [Argo CD](#2-gitops-bootstrap-argo-cd)
+- [Chaos Mesh](#5-chaos-mesh-on-k0s-dev-cluster)
+- [Sync Conflict Note](#6-sync-conflict-note-when-jenkins-updates-image-tags)
 
 ## 1. ArgoCD Manifests Overview
 
