@@ -3,53 +3,65 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ENV_NAME="staging"
+APP_NAME="${APP_NAME:-mini-ecommerce-staging}"
 NAMESPACE="${NAMESPACE:-mini-ecommerce}"
-OVERLAY_DIR="${OVERLAY_DIR:-$ROOT_DIR/overlays/$ENV_NAME}"
+ARGOCD_NAMESPACE="${ARGOCD_NAMESPACE:-argocd}"
+OVERLAY_REL="${OVERLAY_REL:-overlays/$ENV_NAME}"
+APP_MANIFEST_REL="${APP_MANIFEST_REL:-argocd/applications/$APP_NAME.yaml}"
+APP_MANIFEST="${APP_MANIFEST:-$ROOT_DIR/$APP_MANIFEST_REL}"
+KEY_BACKUP_PATH="${KEY_BACKUP_PATH:-$ROOT_DIR/overlays/dev/sealed-secrets-key.yaml}"
+SEALED_SECRETS_MODE="${SEALED_SECRETS_MODE:-auto}"
+CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
+CONTROLLER_NAME="${CONTROLLER_NAME:-sealed-secrets-controller}"
+KUBESEAL_BIN="${KUBESEAL_BIN:-kubeseal}"
 TIMEOUT="${TIMEOUT:-300s}"
-KUBECTL=()
-DEPLOYMENTS=(api-gateway frontend user-service product-service order-service inventory-service payment-service)
+WAIT_INTERVAL_SECONDS="${WAIT_INTERVAL_SECONDS:-5}"
+WAIT_ATTEMPTS="${WAIT_ATTEMPTS:-60}"
+WAIT_DEPLOYMENTS="${WAIT_DEPLOYMENTS:-api-gateway frontend user-service product-service order-service inventory-service payment-service redis}"
+WAIT_STATEFULSETS="${WAIT_STATEFULSETS:-user-db product-db order-db inventory-db payment-db}"
 
-ensure_kubectl() {
-  if command -v kubectl >/dev/null 2>&1; then
-    KUBECTL=(kubectl)
-    return
-  fi
-
-  if command -v k0s >/dev/null 2>&1; then
-    KUBECTL=(sudo k0s kubectl)
-    return
-  fi
-
-  echo "[ERROR] kubectl not found and k0s is unavailable." >&2
-  exit 1
+log() {
+  echo "[INFO] $*"
 }
 
-ensure_overlay() {
-  local kustomization="$OVERLAY_DIR/kustomization.yaml"
-  if [[ ! -f "$kustomization" ]]; then
-    echo "[ERROR] Missing overlay file: $kustomization" >&2
-    exit 1
-  fi
+log '[1/5] Validate local GitOps source'
+ENV_NAME="$ENV_NAME" \
+APP_NAME="$APP_NAME" \
+OVERLAY_REL="$OVERLAY_REL" \
+APP_MANIFEST_REL="$APP_MANIFEST_REL" \
+APP_MANIFEST="$APP_MANIFEST" \
+"$ROOT_DIR/scripts/platform/check-gitops-source.sh"
 
-  if [[ ! -s "$kustomization" ]]; then
-    echo "[ERROR] Overlay '$ENV_NAME' is not ready: $kustomization is empty." >&2
-    exit 1
-  fi
-}
+log '[2/5] Bootstrap platform prerequisites'
+NAMESPACE="$NAMESPACE" \
+ARGOCD_NAMESPACE="$ARGOCD_NAMESPACE" \
+TIMEOUT="$TIMEOUT" \
+"$ROOT_DIR/scripts/platform/bootstrap-platform.sh"
 
-ensure_kubectl
-ensure_overlay
+log '[3/5] Prepare Sealed Secrets'
+NAMESPACE="$NAMESPACE" \
+SEALED_SECRETS_MODE="$SEALED_SECRETS_MODE" \
+KEY_BACKUP_PATH="$KEY_BACKUP_PATH" \
+CONTROLLER_NAMESPACE="$CONTROLLER_NAMESPACE" \
+CONTROLLER_NAME="$CONTROLLER_NAME" \
+KUBESEAL_BIN="$KUBESEAL_BIN" \
+TIMEOUT="$TIMEOUT" \
+"$ROOT_DIR/scripts/secrets/prepare-sealed-secrets.sh"
 
-echo "[1/4] Ensure namespace exists: $NAMESPACE"
-"${KUBECTL[@]}" get ns "$NAMESPACE" >/dev/null 2>&1 || "${KUBECTL[@]}" apply -f "$ROOT_DIR/namespaces/mini-ecommerce.yaml"
+log '[4/5] Apply staging Argo CD application'
+NAMESPACE="$NAMESPACE" \
+ARGOCD_NAMESPACE="$ARGOCD_NAMESPACE" \
+ARGOCD_APP_MANIFEST="$APP_MANIFEST" \
+TIMEOUT="$TIMEOUT" \
+"$ROOT_DIR/scripts/platform/apply-argocd-app.sh"
 
-echo "[2/4] Apply overlay: $OVERLAY_DIR"
-"${KUBECTL[@]}" apply -k "$OVERLAY_DIR"
-
-echo "[3/4] Wait for deployments"
-for deployment in "${DEPLOYMENTS[@]}"; do
-  "${KUBECTL[@]}" -n "$NAMESPACE" rollout status deploy/"$deployment" --timeout="$TIMEOUT"
-done
-
-echo "[4/4] Current resources"
-"${KUBECTL[@]}" get pods,svc,ingress -n "$NAMESPACE"
+log '[5/5] Wait for staging workloads'
+NAMESPACE="$NAMESPACE" \
+ARGOCD_NAMESPACE="$ARGOCD_NAMESPACE" \
+ARGOCD_APP_NAME="$APP_NAME" \
+TIMEOUT="$TIMEOUT" \
+WAIT_INTERVAL_SECONDS="$WAIT_INTERVAL_SECONDS" \
+WAIT_ATTEMPTS="$WAIT_ATTEMPTS" \
+WAIT_DEPLOYMENTS="$WAIT_DEPLOYMENTS" \
+WAIT_STATEFULSETS="$WAIT_STATEFULSETS" \
+"$ROOT_DIR/scripts/platform/wait-workloads.sh"

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NAMESPACE="${NAMESPACE:-mini-ecommerce}"
@@ -63,6 +62,11 @@ install_helm() {
   curl -fsSL "$HELM_INSTALL_URL" | sudo bash
 }
 
+ensure_namespace() {
+  "${KUBECTL[@]}" get namespace "$NAMESPACE" >/dev/null 2>&1 \
+    || "${KUBECTL[@]}" apply -f "$ROOT_DIR/namespaces/mini-ecommerce.yaml"
+}
+
 has_storage_class() {
   "${KUBECTL[@]}" get sc --no-headers 2>/dev/null | grep -q .
 }
@@ -123,35 +127,6 @@ install_sealed_secrets_if_missing() {
   "$ROOT_DIR/scripts/platform/install-sealed-secrets.sh"
 }
 
-install_argocd_if_missing() {
-  local need_install="false"
-
-  if ! "${KUBECTL[@]}" get ns "$ARGOCD_NAMESPACE" >/dev/null 2>&1; then
-    "${KUBECTL[@]}" create namespace "$ARGOCD_NAMESPACE"
-  fi
-
-  if ! "${KUBECTL[@]}" get crd applications.argoproj.io >/dev/null 2>&1; then
-    need_install="true"
-  fi
-
-  if ! "${KUBECTL[@]}" -n "$ARGOCD_NAMESPACE" get deploy argocd-server >/dev/null 2>&1; then
-    need_install="true"
-  fi
-
-  if [[ "$need_install" == "true" ]]; then
-    local manifest="$ARGOCD_INSTALL_MANIFEST"
-    if [[ ! -f "$manifest" ]]; then
-      require_cmd curl
-      manifest="/tmp/argocd-install.yaml"
-      echo "[INFO] Downloading Argo CD manifest..."
-      curl -fsSL "$ARGOCD_INSTALL_URL" -o "$manifest"
-    fi
-
-    echo "[INFO] Installing Argo CD..."
-    "${KUBECTL[@]}" -n "$ARGOCD_NAMESPACE" apply --server-side --force-conflicts -f "$manifest"
-  fi
-}
-
 apply_argocd_application() {
   if [[ -f "$ARGOCD_APP_MANIFEST" ]]; then
     echo "[INFO] Applying Argo CD Application: $ARGOCD_APP_MANIFEST"
@@ -161,25 +136,7 @@ apply_argocd_application() {
   fi
 }
 
-ensure_kubectl
-
-echo "[1/6] Ensure namespace exists: $NAMESPACE"
-"${KUBECTL[@]}" get namespace "$NAMESPACE" >/dev/null 2>&1 || "${KUBECTL[@]}" apply -f "$ROOT_DIR/namespaces/mini-ecommerce.yaml"
-
-echo "[2/6] Ensure default StorageClass"
-install_storage_class_if_missing
-
-echo "[3/6] Install Sealed Secrets (if missing)"
-install_sealed_secrets_if_missing
-
-echo "[4/6] Install Argo CD (if missing)"
-install_argocd_if_missing
-
-echo "[5/6] Apply Argo CD Application"
-apply_argocd_application
-
-echo "[6/6] Argo CD status"
-"${KUBECTL[@]}" -n "$ARGOCD_NAMESPACE" get applications
-"${KUBECTL[@]}" -n "$ARGOCD_NAMESPACE" get pods
-
-echo "Done."
+print_argocd_status() {
+  "${KUBECTL[@]}" -n "$ARGOCD_NAMESPACE" get applications
+  "${KUBECTL[@]}" -n "$ARGOCD_NAMESPACE" get pods
+}
