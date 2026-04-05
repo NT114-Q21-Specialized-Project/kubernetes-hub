@@ -9,8 +9,8 @@ spec:
         - name: api-gateway
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 384Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,8 +23,8 @@ spec:
         - name: user-service
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 25m
+              memory: 64Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -37,8 +37,8 @@ spec:
         - name: product-service
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 384Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -51,8 +51,8 @@ spec:
         - name: order-service
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 512Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -65,8 +65,8 @@ spec:
         - name: frontend
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 10m
+              memory: 32Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -79,8 +79,8 @@ spec:
         - name: inventory-service
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 25m
+              memory: 64Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -93,8 +93,8 @@ spec:
         - name: payment-service
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 384Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -107,5 +107,75 @@ spec:
         - name: redis
           resources:
             requests:
-              cpu: 50m
+              cpu: 25m
+              memory: 64Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: product-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: order-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inventory-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: payment-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          resources:
+            requests:
+              cpu: 25m
               memory: 128Mi
