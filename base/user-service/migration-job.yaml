@@ -1,35 +1,28 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: user-service
+  name: user-service-migrate
 spec:
-  selector:
-    matchLabels:
-      app: user-service
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 60
   template:
     metadata:
       labels:
-        app: user-service
+        app: user-service-migrate
     spec:
       serviceAccountName: user-service
+      restartPolicy: OnFailure
       containers:
-        - name: user-service
+        - name: migrate
           image: tienphatng237/mini-ecommerce-user-service
           imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-
+          command: ["./user-service"]
+          args: ["migrate"]
           env:
             - name: DB_HOST
               value: user-db
             - name: DB_PORT
               value: "5432"
-            - name: JWT_SECRET
-              value: ""
-              valueFrom:
-                secretKeyRef:
-                  name: auth-jwt-secret
-                  key: JWT_SECRET
           envFrom:
             - secretRef:
                 name: user-db-secret

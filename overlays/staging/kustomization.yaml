@@ -4,7 +4,6 @@ namespace: mini-ecommerce
 
 resources:
   - ../../namespaces
-  - secrets
   - ../../base/api-gateway
   - ../../base/frontend
   - ../../base/user-service
@@ -26,16 +25,16 @@ patchesStrategicMerge:
 
 images:
   - name: tienphatng237/mini-ecommerce-api-gateway
-    newTag: "70850d0"
+    newTag: "17448a0"
   - name: tienphatng237/mini-ecommerce-frontend
-    newTag: "d259683"
+    newTag: "32ab596"
   - name: tienphatng237/mini-ecommerce-user-service
-    newTag: "70850d0"
+    newTag: "2f6ce58"
   - name: tienphatng237/mini-ecommerce-product-service
-    newTag: "70850d0"
+    newTag: "17448a0"
   - name: tienphatng237/mini-ecommerce-order-service
-    newTag: "70850d0"
+    newTag: "17448a0"
   - name: tienphatng237/mini-ecommerce-inventory-service
-    newTag: "70850d0"
+    newTag: "17448a0"
   - name: tienphatng237/mini-ecommerce-payment-service
-    newTag: "70850d0"
+    newTag: "17448a0"
