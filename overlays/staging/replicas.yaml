@@ -38,14 +38,14 @@ kind: Deployment
 metadata:
   name: inventory-service
 spec:
-  replicas: 0
+  replicas: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: payment-service
 spec:
-  replicas: 0
+  replicas: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -59,11 +59,11 @@ kind: StatefulSet
 metadata:
   name: inventory-db
 spec:
-  replicas: 0
+  replicas: 1
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: payment-db
 spec:
-  replicas: 0
+  replicas: 1
